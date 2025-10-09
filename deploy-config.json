@@ -1,0 +1,15 @@
+{
+    "main": {
+        "host": "screeps.com",
+        "port": 443,
+        "secure": true,
+        "secretEnv": "SCREEPS_TOKEN_MAIN",
+        "branch": "main"
+    },
+    "private": {
+        "host": "private.screeps.internal",
+        "secure": true,
+        "secretEnv": "SCREEPS_TOKEN_PRIVATE",
+        "branch": "default"
+    }
+}

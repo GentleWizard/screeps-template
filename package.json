@@ -1,0 +1,25 @@
+{
+    "name": "screeps",
+    "module": "index.ts",
+    "type": "module",
+    "private": true,
+    "scripts": {
+        "build": "rollup -c",
+        "build:prod": "NODE_ENV=production rollup -c",
+        "watch": "rollup -c -w"
+    },
+    "devDependencies": {
+        "@rollup/plugin-commonjs": "^28.0.6",
+        "@rollup/plugin-node-resolve": "^16.0.2",
+        "@rollup/plugin-typescript": "^12.1.4",
+        "@types/bun": "latest",
+        "rollup": "^4.52.4",
+        "@rollup/plugin-terser": "^0.4"
+    },
+    "peerDependencies": {
+        "typescript": "^5"
+    },
+    "dependencies": {
+        "@types/screeps": "^3.3.8"
+    }
+}

@@ -1,0 +1,44 @@
+name: Deploy to Screeps
+
+on:
+    push:
+        branches:
+            - "**" # all branches
+        paths:
+            - "src/**"
+            - "rollup.config.js"
+            - "deploy-config.json"
+            - "package.json"
+            - "bun.lockb"
+
+jobs:
+    build-and-deploy:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Setup Bun
+              uses: oven-sh/setup-bun@v1
+              with:
+                  bun-version: latest
+
+            - name: Install dependencies
+              run: bun install
+
+            - name: Build bundle
+              run: bun run build
+
+            - name: Deploy to Screeps
+              env:
+                  GITHUB_REF_NAME: ${{ github.ref_name }}
+                  # Server-specific tokens (match deploy-config.json secretEnv values)
+                  SCREEPS_TOKEN_MAIN: ${{ secrets.SCREEPS_TOKEN_MAIN }}
+                  SCREEPS_TOKEN_PRIVATE: ${{ secrets.SCREEPS_TOKEN_PRIVATE }}
+                  SCREEPS_TOKEN_SIM: ${{ secrets.SCREEPS_TOKEN_SIM }}
+                  # Fallback/global options
+                  SCREEPS_TOKEN: ${{ secrets.SCREEPS_TOKEN }}
+                  SCREEPS_EMAIL: ${{ secrets.SCREEPS_EMAIL }}
+                  SCREEPS_PASSWORD: ${{ secrets.SCREEPS_PASSWORD }}
+              run: bun run deploy-screeps
