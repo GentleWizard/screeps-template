@@ -1,5 +1,3 @@
-function loop(): void {
+module.exports.loop = function (): void {
     console.log(`Current game tick is ${Game.time}`);
-}
-
-module.exports.loop = loop;
+};
