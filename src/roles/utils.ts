@@ -87,7 +87,7 @@ export function harvestNearestEnergySource(creep: Creep): ScreepsReturnCode {
 export function moveToIdlePosition(creep: Creep): void {
     const idleFlag = Game.flags["Idle"];
     if (idleFlag) {
-        creep.moveTo(idleFlag, { visualizePathStyle: { stroke: "#888888" } });
+        creep.moveTo(idleFlag, { visualizePathStyle: { stroke: "#645a5aff" } });
         return;
     }
     // Otherwise, move to a random open tile nearby
