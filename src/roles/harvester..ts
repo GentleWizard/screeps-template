@@ -1,4 +1,4 @@
-import { harvestNearestEnergySource } from "./utils";
+import { harvestNearestEnergySource, moveToIdlePosition } from "./utils";
 
 export const harvester = {
     run: function (creep: Creep): void {
@@ -29,6 +29,8 @@ export const harvester = {
                         visualizePathStyle: { stroke: "#ffffff" },
                     });
                 }
+            } else {
+                moveToIdlePosition(creep);
             }
         }
     },
