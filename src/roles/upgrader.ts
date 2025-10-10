@@ -18,6 +18,8 @@ export const upgrader = {
             ) {
                 creep.moveTo(creep.room.controller);
             }
+        } else {
+            harvestNearestEnergySource(creep);
         }
     },
 };
