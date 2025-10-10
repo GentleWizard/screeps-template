@@ -18,10 +18,10 @@ module.exports.loop = function (): void {
     if (harvesters.length < 2) {
         spawnCreep(body, "harvester");
     }
-    if (upgraders.length < 2 && harvesters.length === 2) {
+    if (upgraders.length < 1 && harvesters.length === 2) {
         spawnCreep(body, "upgrader");
     }
-    if (builders.length < 2 && harvesters.length === 2) {
+    if (builders.length < 1 && harvesters.length === 2) {
         spawnCreep(body, "builder");
     }
 
