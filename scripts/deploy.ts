@@ -5,7 +5,6 @@ interface ServerConfig {
     host: string;
     port?: number;
     secure?: boolean;
-    secretEnv: string;
     screepsBranch?: string;
 }
 
@@ -57,18 +56,12 @@ function makeBaseUrl(server: ServerConfig): string {
 }
 
 async function getTokenForServer(server: ServerConfig): Promise<string> {
-    // Priority: server-specific token > global token
-    if (server.secretEnv && process.env[server.secretEnv]) {
-        console.log(`✓ Using token from ${server.secretEnv}`);
-        return process.env[server.secretEnv]!;
-    }
-
     if (process.env.SCREEPS_TOKEN) {
-        console.log("✓ Using global SCREEPS_TOKEN");
+        console.log("✓ Using SCREEPS_TOKEN");
         return process.env.SCREEPS_TOKEN;
     } else {
         throw new DeployError(
-            `No authentication token found. Please set the environment variable ${server.secretEnv} or SCREEPS_TOKEN.`
+            `No authentication token found. Please set the SCREEPS_TOKEN environment variable.`
         );
     }
 }

@@ -33,9 +33,5 @@ jobs:
             - name: Deploy to Screeps
               env:
                   GITHUB_REF_NAME: ${{ github.ref_name }}
-                  # Server-specific tokens (match deploy-config.json secretEnv values)
-                  SCREEPS_TOKEN_MAIN: ${{ secrets.SCREEPS_TOKEN_MAIN }}
-                  SCREEPS_TOKEN_PRIVATE: ${{ secrets.SCREEPS_TOKEN_PRIVATE }}
-                  # Fallback/global options
                   SCREEPS_TOKEN: ${{ secrets.SCREEPS_TOKEN }}
               run: bun run deploy-screeps
