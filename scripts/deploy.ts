@@ -6,12 +6,12 @@ interface ServerConfig {
     port?: number;
     secure?: boolean;
     secretEnv: string;
+    screepsBranch?: string;
 }
 
 interface DeployConfig {
     [gitBranch: string]: ServerConfig;
 }
-
 
 interface ScreepsUploadResponse {
     ok: number;
@@ -167,7 +167,7 @@ async function main(): Promise<void> {
     }
 
     const apiBase = makeBaseUrl(server);
-    const screepsBranch = gitBranch;
+    const screepsBranch = config[gitBranch]?.screepsBranch || "default";
 
     console.log(`Target server: ${apiBase}`);
     console.log(`Screeps branch: ${screepsBranch}\n`);
