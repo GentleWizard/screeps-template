@@ -2,10 +2,16 @@ export const harvester = {
     run: function (creep: Creep): void {
         if (creep.store.getFreeCapacity() > 0) {
             const sources = creep.room.find(FIND_SOURCES);
-            if (creep.harvest(sources[0]) == ERR_NOT_IN_RANGE) {
-                creep.moveTo(sources[0], {
-                    visualizePathStyle: { stroke: "#ffaa00" },
-                });
+            for (const source of sources) {
+                if (creep.harvest(source) == ERR_NOT_IN_RANGE) {
+                    if (
+                        creep.moveTo(source, {
+                            visualizePathStyle: { stroke: "#ffaa00" },
+                        }) === ERR_NO_PATH
+                    ) {
+                        continue;
+                    }
+                }
             }
         } else {
             const targets = creep.room.find(FIND_STRUCTURES, {

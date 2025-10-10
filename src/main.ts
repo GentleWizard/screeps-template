@@ -3,8 +3,6 @@ import { harvester } from "./roles/harvester.";
 import { upgrader } from "./roles/upgrader";
 
 module.exports.loop = function (): void {
-    const spawns = Object.values(Game.spawns);
-
     const harvesters = Object.entries(Game.creeps).filter(
         ([name, creep]) => creep.memory.role === "harvester"
     );
