@@ -1,4 +1,7 @@
-export function findNearestEnergySource(creep: Creep): Source | null {
+export function findEnergySources(creep: Creep): {
+    source: Source;
+    path: PathStep[];
+}[] {
     const sources = creep.room.find(FIND_SOURCES);
 
     const sourcesByPath = sources
@@ -9,27 +12,76 @@ export function findNearestEnergySource(creep: Creep): Source | null {
         .filter((source) => source.path.length > 0)
         .sort((a, b) => a.path.length - b.path.length);
 
-    return sourcesByPath.length > 0 ? sourcesByPath[0].source : null;
+    return sourcesByPath;
 }
 
 export function harvestNearestEnergySource(creep: Creep): ScreepsReturnCode {
-    const targetSource = findNearestEnergySource(creep);
-
-    if (!targetSource) {
+    const sourcesByPath = findEnergySources(creep);
+    if (sourcesByPath.length === 0) {
         console.log(`${creep.name} cannot reach any source.`);
         return ERR_NOT_FOUND;
     }
 
-    if (creep.harvest(targetSource) === ERR_NOT_IN_RANGE) {
-        const moveResult = creep.moveTo(targetSource, {
-            visualizePathStyle: { stroke: "#ffaa00" },
-        });
-        if (moveResult === ERR_NO_PATH) {
-            console.log(`${creep.name} cannot move to source.`);
-            return ERR_NO_PATH;
+    const prioritized = [
+        ...sourcesByPath.filter((s) => s.source.energy > 0),
+        ...sourcesByPath.filter((s) => s.source.energy === 0),
+    ];
+
+    for (const { source: targetSource } of prioritized) {
+        const harvestResult = creep.harvest(targetSource);
+
+        if (harvestResult === OK) {
+            return OK;
         }
+
+        if (harvestResult === ERR_NOT_IN_RANGE) {
+            const moveResult = creep.moveTo(targetSource, {
+                visualizePathStyle: { stroke: "#ffaa00" },
+            });
+
+            if (moveResult === ERR_NO_PATH) {
+                // Can't reach this source, try the next one.
+                console.log(
+                    `${creep.name} cannot move to source ${targetSource.id}, trying next source.`
+                );
+                continue;
+            }
+
+            // If move succeeded or is a transient "tired" state, return it so caller can handle ticks.
+            if (moveResult === OK || moveResult === ERR_TIRED) {
+                return moveResult;
+            }
+
+            // For other move errors, log and try next candidate where sensible.
+            console.log(
+                `${creep.name} moveTo returned ${moveResult} for source ${targetSource.id}.`
+            );
+            if (moveResult === ERR_INVALID_TARGET) {
+                continue;
+            }
+
+            return moveResult;
+        }
+
+        if (harvestResult === ERR_NOT_ENOUGH_RESOURCES) {
+            // Source temporarily empty; try the next candidate.
+            console.log(
+                `${creep.name} attempted to harvest an empty source ${targetSource.id}, trying next source.`
+            );
+            continue;
+        }
+
+        if (harvestResult === ERR_INVALID_TARGET) {
+            // Target disappeared or became invalid; try the next one.
+            continue;
+        }
+
+        // Return any other unexpected result.
+        return harvestResult;
     }
-    return OK;
+
+    console.log(`${creep.name} could not reach any candidate source.`);
+    return ERR_NO_PATH;
 }
 
 export function moveToIdlePosition(creep: Creep): void {
