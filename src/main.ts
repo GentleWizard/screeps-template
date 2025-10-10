@@ -15,31 +15,30 @@ module.exports.loop = function (): void {
         ([name, creep]) => creep.memory.role === "builder"
     );
 
-    if (harvesters.length < 2) {
-        const newName = `Harvester-${Game.time}`;
-        spawns[0].spawnCreep([WORK, CARRY, MOVE], newName, {
-            memory: { role: "harvester" },
-        });
-        console.log(`Spawning new harvester: ${newName}`);
-    }
+    const body = [WORK, CARRY, MOVE];
 
-    if (upgraders.length < 2) {
-        const newName = `Upgrader-${Game.time}`;
-        spawns[0].spawnCreep([WORK, CARRY, MOVE], newName, {
-            memory: { role: "upgrader" },
-        });
-        console.log(`Spawning new upgrader: ${newName}`);
-    }
-
-    if (builders.length < 2) {
-        const newName = `Builder-${Game.time}`;
-        spawns[0].spawnCreep([WORK, CARRY, MOVE], newName, {
-            memory: { role: "builder" },
-        });
-        console.log(`Spawning new builder: ${newName}`);
-    }
+    spawnCreep(body, "harvester");
+    spawnCreep(body, "upgrader");
+    spawnCreep(body, "builder");
 
     harvesters.map(([name, creep]) => harvester.run(creep));
     upgraders.map(([name, creep]) => upgrader.run(creep));
     builders.map(([name, creep]) => builder.run(creep));
 };
+
+function spawnCreep(body: BodyPartConstant[], role: string): void {
+    const spawns = Object.values(Game.spawns);
+    const cost = body.reduce((sum, part) => sum + BODYPART_COST[part], 0);
+
+    if (spawns[0].store.energy > cost) {
+        const newName = `${role}-${Game.time}`;
+        spawns[0].spawnCreep(body, newName, {
+            memory: { role: role },
+        });
+        console.log(`Spawning new ${role}: ${newName}`);
+    } else {
+        console.log(
+            `Not enough energy to spawn ${role}. Required: ${cost}, Available: ${spawns[0].store.energy}`
+        );
+    }
+}
