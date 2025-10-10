@@ -1,5 +1,4 @@
 import { harvestNearestEnergySource, moveToIdlePosition } from "./utils";
-
 export const builder = {
     run: function (creep: Creep): void {
         if (creep.memory.working && creep.store[RESOURCE_ENERGY] == 0) {
@@ -18,6 +17,8 @@ export const builder = {
                         visualizePathStyle: { stroke: "#ffffff" },
                     });
                 }
+            } else {
+                moveToIdlePosition(creep);
             }
         } else {
             if (creep.store.getFreeCapacity() == creep.store.getCapacity()) {

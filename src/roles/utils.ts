@@ -1,22 +1,15 @@
-/**
- * Find the nearest source that the creep can actually reach (path to an adjacent tile exists).
- * Returns the Source or null if none are reachable.
- */
 export function findNearestEnergySource(creep: Creep): Source | null {
     const sources = creep.room.find(FIND_SOURCES);
 
-    const reachable = sources
+    const sourcesByPath = sources
         .map((source) => ({
             source,
-            path: creep.pos.findPathTo(source.pos, {
-                range: 1,
-                ignoreCreeps: true,
-            }),
+            path: creep.pos.findPathTo(source),
         }))
-        .filter((item) => item.path.length > 0)
+        .filter((source) => source.path.length > 0)
         .sort((a, b) => a.path.length - b.path.length);
 
-    return reachable.length > 0 ? reachable[0].source : null;
+    return sourcesByPath.length > 0 ? sourcesByPath[0].source : null;
 }
 
 export function harvestNearestEnergySource(creep: Creep): ScreepsReturnCode {
