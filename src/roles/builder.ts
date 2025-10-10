@@ -1,4 +1,4 @@
-import { harvestNearestEnergySource } from "./utils";
+import { harvestNearestEnergySource, moveToIdlePosition } from "./utils";
 
 export const builder = {
     run: function (creep: Creep): void {
@@ -20,6 +20,10 @@ export const builder = {
                 }
             }
         } else {
+            if (creep.store.getFreeCapacity() == creep.store.getCapacity()) {
+                moveToIdlePosition(creep);
+                return;
+            }
             harvestNearestEnergySource(creep);
         }
     },

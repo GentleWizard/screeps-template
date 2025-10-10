@@ -1,15 +1,22 @@
+/**
+ * Find the nearest source that the creep can actually reach (path to an adjacent tile exists).
+ * Returns the Source or null if none are reachable.
+ */
 export function findNearestEnergySource(creep: Creep): Source | null {
     const sources = creep.room.find(FIND_SOURCES);
 
-    const sourcesByPath = sources
+    const reachable = sources
         .map((source) => ({
             source,
-            path: creep.pos.findPathTo(source),
+            path: creep.pos.findPathTo(source.pos, {
+                range: 1,
+                ignoreCreeps: true,
+            }),
         }))
-        .filter((source) => source.path.length > 0)
+        .filter((item) => item.path.length > 0)
         .sort((a, b) => a.path.length - b.path.length);
 
-    return sourcesByPath.length > 0 ? sourcesByPath[0].source : null;
+    return reachable.length > 0 ? reachable[0].source : null;
 }
 
 export function harvestNearestEnergySource(creep: Creep): ScreepsReturnCode {
@@ -30,4 +37,34 @@ export function harvestNearestEnergySource(creep: Creep): ScreepsReturnCode {
         }
     }
     return OK;
+}
+
+export function moveToIdlePosition(creep: Creep): void {
+    const idleFlag = Game.flags["Idle"];
+    if (idleFlag) {
+        creep.moveTo(idleFlag, { visualizePathStyle: { stroke: "#888888" } });
+        return;
+    }
+    // Otherwise, move to a random open tile nearby
+    for (let dx = -3; dx <= 3; dx++) {
+        for (let dy = -3; dy <= 3; dy++) {
+            if (dx === 0 && dy === 0) continue;
+            const pos = new RoomPosition(
+                creep.pos.x + dx,
+                creep.pos.y + dy,
+                creep.pos.roomName
+            );
+            if (
+                creep.room.getTerrain().get(pos.x, pos.y) !==
+                    TERRAIN_MASK_WALL &&
+                creep.room.lookForAt(LOOK_CREEPS, pos).length === 0 &&
+                creep.room.lookForAt(LOOK_STRUCTURES, pos).length === 0
+            ) {
+                creep.moveTo(pos, {
+                    visualizePathStyle: { stroke: "#888888" },
+                });
+                return;
+            }
+        }
+    }
 }
