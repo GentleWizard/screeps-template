@@ -1,25 +1,17 @@
 {
     "name": "screeps",
-    "module": "index.ts",
-    "type": "module",
-    "private": true,
-    "scripts": {
-        "build": "rollup -c",
-        "build:prod": "NODE_ENV=production rollup -c",
-        "watch": "rollup -c -w"
-    },
-    "devDependencies": {
-        "@rollup/plugin-commonjs": "^28.0.6",
-        "@rollup/plugin-node-resolve": "^16.0.2",
-        "@rollup/plugin-typescript": "^12.1.4",
-        "@types/bun": "latest",
-        "rollup": "^4.52.4",
-        "@rollup/plugin-terser": "^0.4"
-    },
-    "peerDependencies": {
-        "typescript": "^5"
-    },
     "dependencies": {
         "@types/screeps": "^3.3.8"
-    }
+    },
+    "devDependencies": {
+        "@types/bun": "latest"
+    },
+    "private": true,
+    "scripts": {
+        "build": "bun build src/main.ts --outdir dist --format cjs --target node --sourcemap",
+        "build:prod": "NODE_ENV=production bun build src/main.ts --outdir dist --format cjs --target node --minify",
+        "watch": "bun build src/main.ts --outdir dist --format cjs --target node --watch",
+        "deploy-screeps": "bun ./scripts/deploy.ts"
+    },
+    "type": "module"
 }

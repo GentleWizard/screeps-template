@@ -28,7 +28,7 @@ jobs:
               run: bun install
 
             - name: Build bundle
-              run: bun run build
+              run: bun run build:prod
 
             - name: Deploy to Screeps
               env:
@@ -36,9 +36,6 @@ jobs:
                   # Server-specific tokens (match deploy-config.json secretEnv values)
                   SCREEPS_TOKEN_MAIN: ${{ secrets.SCREEPS_TOKEN_MAIN }}
                   SCREEPS_TOKEN_PRIVATE: ${{ secrets.SCREEPS_TOKEN_PRIVATE }}
-                  SCREEPS_TOKEN_SIM: ${{ secrets.SCREEPS_TOKEN_SIM }}
                   # Fallback/global options
                   SCREEPS_TOKEN: ${{ secrets.SCREEPS_TOKEN }}
-                  SCREEPS_EMAIL: ${{ secrets.SCREEPS_EMAIL }}
-                  SCREEPS_PASSWORD: ${{ secrets.SCREEPS_PASSWORD }}
               run: bun run deploy-screeps

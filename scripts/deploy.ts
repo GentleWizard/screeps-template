@@ -6,20 +6,12 @@ interface ServerConfig {
     port?: number;
     secure?: boolean;
     secretEnv: string;
-    branch?: string; // optional: override screeps branch name
 }
 
 interface DeployConfig {
     [gitBranch: string]: ServerConfig;
 }
 
-interface ScreepsAuthResponse {
-    ok: number;
-    token?: string;
-    data?: {
-        token?: string;
-    };
-}
 
 interface ScreepsUploadResponse {
     ok: number;
@@ -64,11 +56,8 @@ function makeBaseUrl(server: ServerConfig): string {
         : `${proto}://${server.host}:${port}`;
 }
 
-async function getTokenForServer(
-    server: ServerConfig,
-    apiBase: string
-): Promise<string> {
-    // Priority: server-specific token > global token > email/password auth
+async function getTokenForServer(server: ServerConfig): Promise<string> {
+    // Priority: server-specific token > global token
     if (server.secretEnv && process.env[server.secretEnv]) {
         console.log(`✓ Using token from ${server.secretEnv}`);
         return process.env[server.secretEnv]!;
@@ -77,43 +66,11 @@ async function getTokenForServer(
     if (process.env.SCREEPS_TOKEN) {
         console.log("✓ Using global SCREEPS_TOKEN");
         return process.env.SCREEPS_TOKEN;
-    }
-
-    const email = process.env.SCREEPS_EMAIL;
-    const password = process.env.SCREEPS_PASSWORD;
-
-    if (!email || !password) {
+    } else {
         throw new DeployError(
-            `No token found. Provide ${server.secretEnv}, SCREEPS_TOKEN, or SCREEPS_EMAIL & SCREEPS_PASSWORD`
+            `No authentication token found. Please set the environment variable ${server.secretEnv} or SCREEPS_TOKEN.`
         );
     }
-
-    console.log(`→ Authenticating with email/password to ${apiBase}`);
-
-    const res = await fetch(`${apiBase}/api/auth/signin`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-    });
-
-    if (!res.ok) {
-        const txt = await res.text();
-        throw new DeployError(`Authentication failed`, res.status, txt);
-    }
-
-    const json = (await res.json()) as ScreepsAuthResponse;
-    const token = json.token || json.data?.token;
-
-    if (!token) {
-        throw new DeployError(
-            "Token not found in signin response",
-            undefined,
-            JSON.stringify(json)
-        );
-    }
-
-    console.log("✓ Authenticated successfully");
-    return token;
 }
 
 async function collectModules(distPath: string): Promise<ScreepsModules> {
@@ -170,7 +127,6 @@ async function uploadCode(
         headers: {
             "Content-Type": "application/json",
             "X-Token": token,
-            "X-Username": token, // some servers expect this as well
         },
         body: JSON.stringify({ branch, modules }),
     });
@@ -193,39 +149,38 @@ async function main(): Promise<void> {
     const config = JSON.parse(cfgText) as DeployConfig;
 
     // Determine branch
-    const branchFromEnv = process.env.SCREEPS_TARGET_BRANCH;
     const githubBranch = process.env.GITHUB_REF_NAME;
-    const gitBranch = branchFromEnv || githubBranch || "default";
+    const gitBranch = githubBranch || "main";
 
     console.log(`Git branch: ${gitBranch}`);
 
     // Get server config for this branch
-    const server = config[gitBranch] || config.default;
+    const server = config[gitBranch] || config.main;
 
     if (!server) {
         const available = Object.keys(config)
-            .filter((k) => k !== "default")
+            .filter((k) => k !== "main")
             .join(", ");
         throw new DeployError(
-            `No server mapping for branch "${gitBranch}" and no default configured.\nAvailable: ${available}`
+            `No server mapping for branch "${gitBranch}" and no "main" configured.\nAvailable: ${available}`
         );
     }
 
     const apiBase = makeBaseUrl(server);
-    const screepsBranch = server.branch || gitBranch;
+    const screepsBranch = gitBranch;
 
     console.log(`Target server: ${apiBase}`);
     console.log(`Screeps branch: ${screepsBranch}\n`);
 
     // Authenticate
-    const token = await getTokenForServer(server, apiBase);
+    const token = await getTokenForServer(server);
 
     // Collect modules from dist
     console.log("\nCollecting modules from dist/");
     const modules = await collectModules("dist");
 
     // Upload
-    console.log("");
+    console.log("\nUploading code...");
     const result = await uploadCode(apiBase, token, screepsBranch, modules);
 
     console.log("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
