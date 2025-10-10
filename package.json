@@ -8,10 +8,12 @@
     },
     "private": true,
     "scripts": {
+        "lint": "bunx eslint src --ext .ts",
+        "typecheck": "bunx tsc --noEmit",
         "build": "bun build src/main.ts --outdir dist --format cjs --target node --sourcemap",
         "build:prod": "NODE_ENV=production bun build src/main.ts --outdir dist --format cjs --target node --minify",
         "watch": "bun build src/main.ts --outdir dist --format cjs --target node --watch",
-        "deploy-screeps": "bun ./scripts/deploy.ts"
+        "deploy-screeps": "bun run lint && bun run typecheck && bun run build:prod && bun ./scripts/deploy.ts"
     },
     "type": "module"
 }
