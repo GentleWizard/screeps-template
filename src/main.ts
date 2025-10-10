@@ -15,9 +15,15 @@ module.exports.loop = function (): void {
 
     const body = [WORK, CARRY, MOVE];
 
-    spawnCreep(body, "harvester");
-    spawnCreep(body, "upgrader");
-    spawnCreep(body, "builder");
+    if (harvesters.length < 2) {
+        spawnCreep(body, "harvester");
+    }
+    if (upgraders.length < 2 && harvesters.length === 2) {
+        spawnCreep(body, "upgrader");
+    }
+    if (builders.length < 2 && harvesters.length === 2) {
+        spawnCreep(body, "builder");
+    }
 
     harvesters.map(([name, creep]) => harvester.run(creep));
     upgraders.map(([name, creep]) => upgrader.run(creep));
