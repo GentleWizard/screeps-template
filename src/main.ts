@@ -1,6 +1,13 @@
 import { builder } from "./roles/builder";
 import { harvester } from "./roles/harvester.";
 import { upgrader } from "./roles/upgrader";
+const minimumHarvesters = 2;
+const minimumUpgraders = 2;
+const minimumBuilders = 2;
+
+const harvestBody: BodyPartConstant[] = [WORK, CARRY, MOVE];
+const upgradeBody: BodyPartConstant[] = [WORK, CARRY, MOVE];
+const buildBody: BodyPartConstant[] = [WORK, CARRY, MOVE];
 
 module.exports.loop = function (): void {
     const harvesters = Object.entries(Game.creeps).filter(
@@ -13,26 +20,20 @@ module.exports.loop = function (): void {
         ([name, creep]) => creep.memory.role === "builder"
     );
 
-    const body = [WORK, CARRY, MOVE];
-
-    const minimumHarvesters = 2;
-    const minimumUpgraders = 2;
-    const minimumBuilders = 2;
-
     if (harvesters.length < minimumHarvesters) {
-        spawnCreep(body, "harvester");
+        spawnCreep(harvestBody, "harvester");
     }
     if (
         upgraders.length < minimumUpgraders &&
         harvesters.length === minimumHarvesters
     ) {
-        spawnCreep(body, "upgrader");
+        spawnCreep(upgradeBody, "upgrader");
     }
     if (
         builders.length < minimumBuilders &&
         harvesters.length === minimumHarvesters
     ) {
-        spawnCreep(body, "builder");
+        spawnCreep(buildBody, "builder");
     }
 
     harvesters.map(([name, creep]) => harvester.run(creep));
