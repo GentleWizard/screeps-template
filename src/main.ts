@@ -15,13 +15,23 @@ module.exports.loop = function (): void {
 
     const body = [WORK, CARRY, MOVE];
 
-    if (harvesters.length < 2) {
+    const minimumHarvesters = 2;
+    const minimumUpgraders = 2;
+    const minimumBuilders = 2;
+
+    if (harvesters.length < minimumHarvesters) {
         spawnCreep(body, "harvester");
     }
-    if (upgraders.length < 1 && harvesters.length === 2) {
+    if (
+        upgraders.length < minimumUpgraders &&
+        harvesters.length === minimumHarvesters
+    ) {
         spawnCreep(body, "upgrader");
     }
-    if (builders.length < 1 && harvesters.length === 2) {
+    if (
+        builders.length < minimumBuilders &&
+        harvesters.length === minimumHarvesters
+    ) {
         spawnCreep(body, "builder");
     }
 
