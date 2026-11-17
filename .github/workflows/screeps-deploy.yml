@@ -21,6 +21,7 @@ concurrency:
 
 jobs:
     deploy:
+        if: ${{ !endsWith(github.repository, '/screeps-template') }}
         runs-on: ubuntu-24.04
         timeout-minutes: 10
 
