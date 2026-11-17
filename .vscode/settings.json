@@ -1,3 +1,4 @@
 {
-    "cSpell.words": ["upgrader"]
+	"cSpell.words": ["upgrader"],
+	"js/ts.tsdk.path": "node_modules\\typescript"
 }

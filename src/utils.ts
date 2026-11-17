@@ -1,18 +1,22 @@
-export function spawnCreep(body: BodyPartConstant[], role: string): void {
-    const spawns = Object.values(Game.spawns);
-    const cost = body.reduce((sum, part) => sum + BODYPART_COST[part], 0);
+export function harvestEnergy(creep: Creep) {
+	const source =
+		creep.pos.findClosestByPath(FIND_SOURCES_ACTIVE) ??
+		creep.pos.findClosestByPath(FIND_SOURCES);
 
-    if (spawns[0].store.energy > cost && !spawns[0].spawning) {
-        const newName = `${role}-${Game.time}`;
-        spawns[0].spawnCreep(body, newName, {
-            memory: { role: role },
-        });
-        console.log(`Spawning new ${role}: ${newName}`);
-    } else if (spawns[0].spawning) {
-        console.log(`Spawn is already busy.`);
-    } else {
-        console.log(
-            `Not enough energy to spawn ${role}. Required: ${cost}, Available: ${spawns[0].store.energy}`
-        );
-    }
+	if (!source) return;
+
+	if (creep.harvest(source) === ERR_NOT_IN_RANGE) {
+		creep.moveTo(source, { visualizePathStyle: { stroke: "#ffaa00" } });
+	}
+}
+
+export function setWorkingIfHasEnergy(creep: Creep) {
+	const is_working = creep.memory.working;
+	if (is_working && creep.store[RESOURCE_ENERGY] === 0) {
+		creep.memory.working = false;
+	}
+
+	if (!is_working && creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) {
+		creep.memory.working = true;
+	}
 }

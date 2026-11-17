@@ -3,35 +3,48 @@ name: Deploy to Screeps
 on:
     push:
         branches:
-            - "**" # all branches
+            - main
         paths:
             - "src/**"
-            - "rollup.config.js"
-            - "deploy-config.json"
+            - "scripts/**"
+            - "vite.config.ts"
             - "package.json"
-            - "bun.lockb"
+            - "tsconfig.json"
+    workflow_dispatch:
+
+permissions:
+    contents: read
+
+concurrency:
+    group: screeps-deploy
+    cancel-in-progress: false
 
 jobs:
-    build-and-deploy:
-        runs-on: ubuntu-latest
+    deploy:
+        runs-on: ubuntu-24.04
+        timeout-minutes: 10
 
         steps:
             - name: Checkout
               uses: actions/checkout@v4
 
             - name: Setup Bun
-              uses: oven-sh/setup-bun@v1
+              uses: oven-sh/setup-bun@v2
               with:
-                  bun-version: latest
+                  bun-version: "1.4.4"
 
             - name: Install dependencies
               run: bun install
 
-            - name: Build bundle
-              run: bun run build:prod
+            - name: Lint
+              run: bun run lint
 
-            - name: Deploy to Screeps
+            - name: Type check
+              run: bunx tsc --noEmit
+
+            - name: Build and deploy
               env:
-                  GITHUB_REF_NAME: ${{ github.ref_name }}
                   SCREEPS_TOKEN: ${{ secrets.SCREEPS_TOKEN }}
-              run: bun run deploy-screeps
+                  SCREEPS_BRANCH: ${{ github.ref_name == 'main' && 'default' || github.ref_name }}
+
+              run: bun run deploy

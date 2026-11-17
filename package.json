@@ -1,17 +1,21 @@
 {
     "name": "screeps",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "build": "vp pack",
+        "lint": "vp lint",
+        "format": "vp format",
+        "deploy": "bun run build && bun ./scripts/deploy.ts"
+    },
     "dependencies": {
-        "@types/screeps": "^3.3.8"
+        "@types/screeps": "^3.4.0"
     },
     "devDependencies": {
-        "@types/bun": "latest"
-    },
-    "private": true,
-    "scripts": {
-        "build": "bun build src/main.ts --outdir dist --format cjs --target node --sourcemap",
-        "build:prod": "NODE_ENV=production bun build src/main.ts --outdir dist --format cjs --target node --minify",
-        "watch": "bun build src/main.ts --outdir dist --format cjs --target node --watch",
-        "deploy-screeps": "bun ./scripts/deploy.ts"
-    },
-    "type": "module"
+        "@types/bun": "1.4.4",
+        "@types/node": "^26.6.6",
+        "typescript": "^7.0.2",
+        "vite": "npm:@voidzero-dev/vite-plus-core@1.6.0",
+        "vite-plus": "1.6.0"
+    }
 }

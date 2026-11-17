@@ -1,43 +1,68 @@
-import { builder } from "./roles/builder";
-import { harvester } from "./roles/harvester.";
-import { upgrader } from "./roles/upgrader";
-import { spawnCreep } from "./utils";
-const minimumHarvesters = 2;
-const minimumUpgraders = 2;
-const minimumBuilders = 2;
+import type { CreepRole } from "./creeps";
+import { Builder } from "./creeps/builder";
+import { Harvester } from "./creeps/harvester";
+import { Upgrader } from "./creeps/upgrader";
+import type { Role } from "./types";
 
-const harvestBody: BodyPartConstant[] = [WORK, CARRY, MOVE];
-const upgradeBody: BodyPartConstant[] = [WORK, CARRY, MOVE];
-const buildBody: BodyPartConstant[] = [WORK, CARRY, MOVE];
+const MINIMUM_PER_ROLE = 2;
 
-module.exports.loop = function (): void {
-    const harvesters = Object.entries(Game.creeps).filter(
-        ([name, creep]) => creep.memory.role === "harvester"
-    );
-    const upgraders = Object.entries(Game.creeps).filter(
-        ([name, creep]) => creep.memory.role === "upgrader"
-    );
-    const builders = Object.entries(Game.creeps).filter(
-        ([name, creep]) => creep.memory.role === "builder"
-    );
+const WORKER_BODY: BodyPartConstant[] = [WORK, CARRY, MOVE];
 
-    if (harvesters.length < minimumHarvesters) {
-        spawnCreep(harvestBody, "harvester");
-    }
-    if (
-        upgraders.length < minimumUpgraders &&
-        harvesters.length === minimumHarvesters
-    ) {
-        spawnCreep(upgradeBody, "upgrader");
-    }
-    if (
-        builders.length < minimumBuilders &&
-        harvesters.length === minimumHarvesters
-    ) {
-        spawnCreep(buildBody, "builder");
-    }
-
-    harvesters.map(([name, creep]) => harvester.run(creep));
-    upgraders.map(([name, creep]) => upgrader.run(creep));
-    builders.map(([name, creep]) => builder.run(creep));
+const ROLES: Record<Role, new (creep: Creep) => CreepRole> = {
+	harvester: Harvester,
+	upgrader: Upgrader,
+	builder: Builder,
 };
+
+function ensureCreeps(role: Role, allowSpawn: boolean): Creep[] {
+	const creeps: Creep[] = [];
+
+	for (let index = 0; index < MINIMUM_PER_ROLE; index++) {
+		const name = `${role}-${index}`;
+		const existing = Game.creeps[name];
+		if (existing) {
+			creeps.push(existing);
+			continue;
+		}
+		if (allowSpawn) spawnCreep(name, role);
+	}
+
+	return creeps;
+}
+
+function spawnCreep(name: string, role: Role) {
+	const spawn = findSpawn();
+
+	if (!spawn || spawn.spawning) return;
+
+	if (spawn.spawnCreep(WORKER_BODY, name, { memory: { role } }) === OK) {
+		console.log(`Spawning new ${role}: ${name}`);
+	}
+}
+
+function findSpawn(): StructureSpawn | undefined {
+	for (const name in Game.spawns) return Game.spawns[name];
+
+	return undefined;
+}
+
+function clearDeadCreepMemory() {
+	for (const name in Memory.creeps) {
+		if (!Game.creeps[name]) delete Memory.creeps[name];
+	}
+}
+
+export function loop() {
+	clearDeadCreepMemory();
+
+	const harvesters = ensureCreeps("harvester", true);
+	const canExpand = harvesters.length === MINIMUM_PER_ROLE;
+	ensureCreeps("upgrader", canExpand);
+	ensureCreeps("builder", canExpand);
+
+	for (const name in Game.creeps) {
+		const creep = Game.creeps[name];
+		const role = creep.memory.role;
+		if (role) new ROLES[role](creep).run();
+	}
+}
