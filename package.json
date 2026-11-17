@@ -6,7 +6,7 @@
         "build": "vp pack",
         "lint": "vp lint",
         "format": "vp format",
-        "deploy": "bun run build && bun ./scripts/deploy.ts"
+        "deploy": "vp run build && node ./scripts/deploy.ts"
     },
     "dependencies": {
         "@types/screeps": "^3.4.0"
