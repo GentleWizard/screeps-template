@@ -2,8 +2,8 @@ name: Deploy to Screeps
 
 on:
     push:
-        branches:
-            - main
+        branches-ignore:
+            - template
         paths:
             - "src/**"
             - "scripts/**"
@@ -16,7 +16,7 @@ permissions:
     contents: read
 
 concurrency:
-    group: screeps-deploy
+    group: screeps-deploy-${{ github.ref }}
     cancel-in-progress: false
 
 jobs:
@@ -26,7 +26,7 @@ jobs:
 
         steps:
             - name: Checkout
-              uses: actions/checkout@v4
+              uses: actions/checkout@v5
 
             - name: Setup Bun
               uses: oven-sh/setup-bun@v2
